@@ -1,42 +1,98 @@
-@import "tailwindcss";
+  @import "tailwindcss";
 
-@theme inline {
-  --font-sans: var(--font-inter), system-ui, sans-serif;
-  --font-display: var(--font-fraunces), Georgia, serif;
-}
+  @custom-variant dark (&:where(.dark, .dark *));
 
-:root {
-  --bg: #07070d;
-}
+  @theme inline {
+    --font-sans: var(--font-inter), system-ui, sans-serif;
+    --font-display: var(--font-fraunces), Georgia, serif;
+  }
 
-html {
-  background: var(--bg);
-  color-scheme: dark;
-}
+  :root {
+    --bg: #f7f8fc;
+    --fg: #18181b;
+    --muted: #71717a;
 
-body {
-  background: var(--bg);
-  color: #e8e8f0;
-  font-family: var(--font-inter), system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
+    --surface: rgba(255, 255, 255, 0.72);
+    --surface-strong: rgba(255, 255, 255, 0.92);
+    --border: rgba(24, 24, 27, 0.08);
 
-.glow-bg {
-  background:
-    radial-gradient(60% 50% at 20% 0%, rgba(99, 102, 241, 0.22), transparent 70%),
-    radial-gradient(50% 40% at 90% 10%, rgba(245, 158, 11, 0.14), transparent 70%),
-    radial-gradient(60% 50% at 50% 100%, rgba(236, 72, 153, 0.1), transparent 70%);
-}
+    --glow-1: rgba(99, 102, 241, 0.14);
+    --glow-2: rgba(245, 158, 11, 0.09);
+    --glow-3: rgba(236, 72, 153, 0.07);
+  }
 
-.glass {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  backdrop-filter: blur(12px);
-}
+  .dark {
+    --bg: #07070d;
+    --fg: #e8e8f0;
+    --muted: #a1a1aa;
 
-.no-scrollbar {
-  scrollbar-width: none;
-}
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
+    --surface: rgba(255, 255, 255, 0.045);
+    --surface-strong: rgba(255, 255, 255, 0.07);
+    --border: rgba(255, 255, 255, 0.09);
+
+    --glow-1: rgba(99, 102, 241, 0.22);
+    --glow-2: rgba(245, 158, 11, 0.14);
+    --glow-3: rgba(236, 72, 153, 0.1);
+  }
+
+  html {
+    background: var(--bg);
+    color-scheme: light;
+  }
+
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-inter), system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    transition:
+      background-color 220ms ease,
+      color 220ms ease;
+  }
+
+  ::selection {
+    background: rgba(99, 102, 241, 0.24);
+  }
+
+  .glow-bg {
+    position: relative;
+    isolation: isolate;
+    min-height: 100%;
+    background:
+      radial-gradient(
+        60% 50% at 20% 0%,
+        var(--glow-1),
+        transparent 70%
+      ),
+      radial-gradient(
+        50% 40% at 90% 10%,
+        var(--glow-2),
+        transparent 70%
+      ),
+      radial-gradient(
+        60% 50% at 50% 100%,
+        var(--glow-3),
+        transparent 70%
+      );
+  }
+
+  .glass {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
