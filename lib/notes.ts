@@ -1,10 +1,7 @@
     import fs from "node:fs";
     import path from "node:path";
 
-    import type {
-    Note,
-    NoteType,
-    } from "@/lib/data";
+    import type { Note, NoteType } from "@/lib/data";
 
     const NOTES_ROOT = path.join(
     process.cwd(),
@@ -78,7 +75,11 @@
     ): Note | null {
     const extension = path.extname(filename);
 
-    if (!SUPPORTED_EXTENSIONS.has(extension.toLowerCase())) {
+    if (
+        !SUPPORTED_EXTENSIONS.has(
+        extension.toLowerCase(),
+        )
+    ) {
         return null;
     }
 
@@ -100,10 +101,6 @@
         title: titleFromSlug(slug),
         type,
         date: dateFromSlug(slug),
-
-        // IMPORTANT:
-        // This points to /public/notes, which becomes
-        // the root-level /notes URL in production.
         url: `/notes/${classNumber}/${subject}/${filename}`,
     };
     }
@@ -172,11 +169,11 @@
     }
 
     return notes.sort((a, b) => {
-        const dateCompare =
+        const dateComparison =
         b.date.localeCompare(a.date);
 
-        if (dateCompare !== 0) {
-        return dateCompare;
+        if (dateComparison !== 0) {
+        return dateComparison;
         }
 
         return a.title.localeCompare(b.title);
@@ -189,4 +186,35 @@
     return getAllNotes().filter(
         (note) => note.class === classNumber,
     );
+    }
+
+    export function getNoteHtml(
+    classNumber: number,
+    subject: string,
+    slug: string,
+    ): string | null {
+    const safeSlug = path.basename(slug);
+
+    const candidates = [
+        `${safeSlug}.html`,
+        `${safeSlug}.htm`,
+    ];
+
+    for (const filename of candidates) {
+        const filePath = path.join(
+        NOTES_ROOT,
+        String(classNumber),
+        subject,
+        filename,
+        );
+
+        if (fs.existsSync(filePath)) {
+        return fs.readFileSync(
+            filePath,
+            "utf8",
+        );
+        }
+    }
+
+    return null;
     }

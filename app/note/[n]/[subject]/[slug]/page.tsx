@@ -3,25 +3,16 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 
 import { subjectsFor } from "@/lib/data";
-import { getAllNotes } from "@/lib/notes";
+import {
+  getAllNotes,
+  getNoteHtml,
+} from "@/lib/notes";
 import ThreeViewer from "@/components/ThreeViewer";
 
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  const all = getAllNotes();
-
-  if (all.length === 0) {
-    return [
-      {
-        n: "0",
-        subject: "none",
-        slug: "none",
-      },
-    ];
-  }
-
-  return all.map((note) => ({
+  return getAllNotes().map((note) => ({
     n: String(note.class),
     subject: note.subject,
     slug: note.slug,
@@ -40,12 +31,13 @@ export default async function NotePage({
   const { n, subject, slug } = await params;
 
   const classNumber = Number(n);
+  const decodedSlug = decodeURIComponent(slug);
 
   const note = getAllNotes().find(
     (item) =>
       item.class === classNumber &&
       item.subject === subject &&
-      item.slug === decodeURIComponent(slug),
+      item.slug === decodedSlug,
   );
 
   if (!note) {
@@ -56,14 +48,22 @@ export default async function NotePage({
     (item) => item.slug === note.subject,
   );
 
+  const html =
+    note.type === "html"
+      ? getNoteHtml(
+          note.class,
+          note.subject,
+          note.slug,
+        )
+      : null;
+
+  if (note.type === "html" && html === null) {
+    notFound();
+  }
+
   return (
     <main className="flex h-[calc(100vh-4rem)] flex-col">
-      <div
-        className="
-          mx-auto flex w-full max-w-6xl
-          items-center gap-4 px-5 py-3
-        "
-      >
+      <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-5 py-3">
         <Link
           href={`/class/${note.class}`}
           className="
@@ -88,22 +88,11 @@ export default async function NotePage({
         </Link>
 
         <div className="min-w-0 flex-1">
-          <p
-            className="
-              truncate font-semibold
-              text-zinc-950
-              dark:text-white
-            "
-          >
+          <p className="truncate font-semibold text-zinc-950 dark:text-white">
             {note.title}
           </p>
 
-          <p
-            className="
-              text-xs text-zinc-500
-              dark:text-white/50
-            "
-          >
+          <p className="text-xs text-zinc-500 dark:text-white/50">
             Class {note.class} · {sub?.name ?? note.subject}
           </p>
         </div>
@@ -131,42 +120,26 @@ export default async function NotePage({
         )}
       </div>
 
-      <div
-        className="
-          mx-auto min-h-0 w-full max-w-6xl
-          flex-1 px-3 pb-3
-          sm:px-5 sm:pb-5
-        "
-      >
+      <div className="mx-auto min-h-0 w-full max-w-6xl flex-1 px-3 pb-3 sm:px-5 sm:pb-5">
         <div
           className="
-            glass h-full overflow-hidden
-            rounded-2xl
+            glass h-full overflow-hidden rounded-2xl
             shadow-xl shadow-black/5
             dark:shadow-black/30
           "
         >
-          {note.type === "html" && (
+          {note.type === "html" && html !== null && (
             <iframe
-              key={note.url}
-              src={note.url}
               title={note.title}
+              srcDoc={html}
               loading="eager"
-              referrerPolicy="same-origin"
-              allowFullScreen
               className="h-full w-full border-0 bg-white"
+              sandbox="allow-scripts allow-forms allow-modals allow-popups allow-presentation"
             />
           )}
 
           {note.type === "image" && (
-            <div
-              className="
-                grid h-full place-items-center
-                overflow-auto p-4
-                bg-zinc-50
-                dark:bg-zinc-950
-              "
-            >
+            <div className="grid h-full place-items-center overflow-auto p-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={note.url}
