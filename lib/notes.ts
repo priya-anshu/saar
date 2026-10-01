@@ -60,9 +60,7 @@
         .replace(/[-_]+/g, " ")
         .replace(/\s+/g, " ")
         .trim()
-        .replace(/\b\w/g, (char) =>
-        char.toUpperCase(),
-        );
+        .replace(/\b\w/g, (char) => char.toUpperCase());
     }
 
     function dateFromSlug(slug: string) {
@@ -79,28 +77,34 @@
     filename: string,
     ): Note | null {
     const extension = path.extname(filename);
+
+    if (!SUPPORTED_EXTENSIONS.has(extension.toLowerCase())) {
+        return null;
+    }
+
     const type = getNoteType(extension);
 
     if (!type) {
         return null;
     }
 
-    const baseName = path.basename(
+    const slug = path.basename(
         filename,
         extension,
     );
 
-    const publicPath =
-        `/notes/${classNumber}/${subject}/${filename}`;
-
     return {
         class: classNumber,
         subject,
-        slug: baseName,
-        title: titleFromSlug(baseName),
+        slug,
+        title: titleFromSlug(slug),
         type,
-        date: dateFromSlug(baseName),
-        url: publicPath,
+        date: dateFromSlug(slug),
+
+        // IMPORTANT:
+        // This points to /public/notes, which becomes
+        // the root-level /notes URL in production.
+        url: `/notes/${classNumber}/${subject}/${filename}`,
     };
     }
 
@@ -109,28 +113,27 @@
         return [];
     }
 
+    const notes: Note[] = [];
+
     const classDirectories = fs
         .readdirSync(NOTES_ROOT, {
         withFileTypes: true,
         })
         .filter((entry) => entry.isDirectory())
-        .map((entry) => entry.name)
-        .filter((name) => /^\d+$/.test(name))
+        .filter((entry) => /^\d+$/.test(entry.name))
         .sort(
         (a, b) =>
-            Number(a) - Number(b),
+            Number(a.name) - Number(b.name),
         );
-
-    const notes: Note[] = [];
 
     for (const classDirectory of classDirectories) {
         const classNumber = Number(
-        classDirectory,
+        classDirectory.name,
         );
 
         const classPath = path.join(
         NOTES_ROOT,
-        classDirectory,
+        classDirectory.name,
         );
 
         const subjectDirectories = fs
@@ -140,7 +143,8 @@
         .filter((entry) => entry.isDirectory());
 
         for (const subjectDirectory of subjectDirectories) {
-        const subject = subjectDirectory.name;
+        const subject =
+            subjectDirectory.name;
 
         const subjectPath = path.join(
             classPath,
@@ -151,14 +155,13 @@
             .readdirSync(subjectPath, {
             withFileTypes: true,
             })
-            .filter((entry) => entry.isFile())
-            .map((entry) => entry.name);
+            .filter((entry) => entry.isFile());
 
-        for (const filename of files) {
+        for (const file of files) {
             const note = buildNote(
             classNumber,
             subject,
-            filename,
+            file.name,
             );
 
             if (note) {
@@ -169,11 +172,11 @@
     }
 
     return notes.sort((a, b) => {
-        const dateComparison =
+        const dateCompare =
         b.date.localeCompare(a.date);
 
-        if (dateComparison !== 0) {
-        return dateComparison;
+        if (dateCompare !== 0) {
+        return dateCompare;
         }
 
         return a.title.localeCompare(b.title);
