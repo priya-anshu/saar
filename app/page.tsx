@@ -1,69 +1,82 @@
-import Image from "next/image";
+"use client";
+
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
+import { CLASSES } from "@/lib/data";
+
+const band = (c: number) =>
+  c <= 5
+    ? "from-emerald-400/30 to-teal-500/10"
+    : c <= 8
+    ? "from-sky-400/30 to-indigo-500/10"
+    : c <= 10
+    ? "from-violet-400/30 to-fuchsia-500/10"
+    : "from-amber-400/30 to-rose-500/10";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <main className="glow-bg">
+      <section className="mx-auto max-w-6xl px-5 pb-10 pt-20 text-center sm:pt-28">
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mx-auto mb-5 w-fit rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs tracking-widest text-white/60 uppercase"
+        >
+          Class 3 – 12 · Notes
+        </motion.p>
+        <motion.h1
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="font-display text-5xl leading-[1.05] font-semibold tracking-tight sm:text-7xl"
+        >
+          Learn the{" "}
+          <span className="bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-amber-300 bg-clip-text text-transparent">
+            essence.
+          </span>
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mx-auto mt-6 max-w-xl text-base text-white/60 sm:text-lg"
+        >
+          Fewer notes. Better notes. Interactive lessons, 3D models and clear visuals for every class.
+        </motion.p>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 pb-10">
+        <h2 className="mb-5 text-sm font-medium tracking-widest text-white/50 uppercase">
+          Choose your class
+        </h2>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          {CLASSES.map((c, i) => (
+            <motion.div
+              key={c}
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 + i * 0.05 }}
+              whileHover={{ y: -6 }}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              <Link
+                href={`/class/${c}`}
+                className="glass group relative block overflow-hidden rounded-3xl p-6 transition hover:border-white/25"
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${band(c)} opacity-0 transition group-hover:opacity-100`} />
+                <div className="relative">
+                  <p className="text-xs tracking-widest text-white/50 uppercase">Class</p>
+                  <p className="font-display mt-1 text-6xl font-semibold">{c}</p>
+                  <p className="mt-4 flex items-center gap-1.5 text-sm text-white/50 transition group-hover:text-white/90">
+                    Open subjects
+                    <ArrowRight size={14} className="transition group-hover:translate-x-1" />
+                  </p>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }
