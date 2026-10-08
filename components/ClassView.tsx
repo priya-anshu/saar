@@ -4,14 +4,15 @@ import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ChevronRight, Inbox } from "lucide-react";
+import { subjectIcon, typeIcon } from "@/lib/icons";
+import { TYPE_LABEL, formatDate, type Note, type Subject } from "@/lib/data";
 
-import { SUBJECT_ICON, TYPE_ICON } from "@/lib/icons";
-import {
-  TYPE_LABEL,
-  formatDate,
-  type Note,
-  type Subject,
-} from "@/lib/data";
+const TONES = [
+  { text: "text-brand", chip: "bg-brand/15 text-brand", edge: "border-l-brand", pill: "border-brand/50 bg-brand/15", hover: "hover:border-brand/60 hover:bg-brand/5", arrow: "group-hover:text-brand", badge: "bg-brand/15 text-brand" },
+  { text: "text-brand2", chip: "bg-brand2/15 text-brand2", edge: "border-l-brand2", pill: "border-brand2/50 bg-brand2/15", hover: "hover:border-brand2/60 hover:bg-brand2/5", arrow: "group-hover:text-brand2", badge: "bg-brand2/15 text-brand2" },
+  { text: "text-brand3", chip: "bg-brand3/15 text-brand3", edge: "border-l-brand3", pill: "border-brand3/50 bg-brand3/15", hover: "hover:border-brand3/60 hover:bg-brand3/5", arrow: "group-hover:text-brand3", badge: "bg-brand3/15 text-brand3" },
+  { text: "text-brand4", chip: "bg-brand4/15 text-brand4", edge: "border-l-brand4", pill: "border-brand4/50 bg-brand4/15", hover: "hover:border-brand4/60 hover:bg-brand4/5", arrow: "group-hover:text-brand4", badge: "bg-brand4/15 text-brand4" },
+];
 
 export default function ClassView({
   cls,
@@ -22,82 +23,40 @@ export default function ClassView({
   subjects: Subject[];
   notes: Note[];
 }) {
-  const first =
-    subjects.find((subject) =>
-      notes.some((note) => note.subject === subject.slug),
-    ) ?? subjects[0];
-
+  const first = subjects.find((s) => notes.some((n) => n.subject === s.slug)) ?? subjects[0];
   const [active, setActive] = useState(first.slug);
-
-  const list = notes.filter(
-    (note) => note.subject === active,
+  const list = notes.filter((n) => n.subject === active);
+  const hasNotes = (slug: string) => notes.some((n) => n.subject === slug);
+  const ordered = [...subjects].sort(
+    (a, b) => Number(hasNotes(b.slug)) - Number(hasNotes(a.slug))
   );
-
   return (
     <>
-      <div
-        className="
-          no-scrollbar -mx-5 mt-10
-          flex gap-2 overflow-x-auto
-          px-5 pb-2
-        "
-      >
-        {subjects.map((subject) => {
-          const Icon = SUBJECT_ICON[subject.icon];
-
-          const count = notes.filter(
-            (note) => note.subject === subject.slug,
-          ).length;
-
-          const isActive = active === subject.slug;
-
+      <div className="no-scrollbar -mx-5 mt-10 flex gap-2 overflow-x-auto px-5 pb-2">
+        {ordered.map((s, si) => {
+          const Icon = subjectIcon(s.icon);
+          const tone = TONES[si % 4];
+          const count = notes.filter((n) => n.subject === s.slug).length;
+          const isActive = active === s.slug;
           return (
             <button
-              key={subject.slug}
-              type="button"
-              onClick={() => setActive(subject.slug)}
-              className={`
-                relative shrink-0 rounded-full
-                px-4 py-2.5 text-sm
-                transition
-                ${
-                  isActive
-                    ? "text-zinc-950 dark:text-white"
-                    : "text-zinc-500 hover:text-zinc-900 dark:text-white/50 dark:hover:text-white/80"
-                }
-              `}
+              key={s.slug}
+              onClick={() => setActive(s.slug)}
+              className={`relative shrink-0 rounded-full px-4 py-2.5 text-sm transition ${
+                isActive ? "font-medium text-fg" : "text-mute hover:text-fg"
+              }`}
             >
               {isActive && (
                 <motion.span
                   layoutId="subject-pill"
-                  className="
-                    absolute inset-0 rounded-full
-                    border border-black/[0.08]
-                    bg-black/[0.04]
-                    dark:border-white/[0.15]
-                    dark:bg-white/[0.08]
-                  "
-                  transition={{
-                    type: "spring",
-                    bounce: 0.2,
-                    duration: 0.5,
-                  }}
+                  className={`absolute inset-0 rounded-full border ${tone.pill}`}
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
                 />
               )}
-
               <span className="relative flex items-center gap-2">
-                <Icon size={16} />
-
-                {subject.name}
-
-                <span
-                  className="
-                    text-xs text-zinc-400
-                    dark:text-white/35
-                  "
-                >
-                  {count}
-                </span>
+                <Icon size={16} className={tone.text} />
+                {s.name}
+                <span className="text-xs text-mute">{count}</span>
               </span>
             </button>
           );
@@ -109,23 +68,16 @@ export default function ClassView({
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="
-              glass flex flex-col
-              items-center gap-3
-              rounded-3xl p-12
-              text-zinc-500
-              dark:text-white/50
-            "
+            className="glass flex flex-col items-center gap-3 rounded-3xl p-12 text-mute"
           >
             <Inbox size={32} />
-
             <p>No notes yet. Fresh content is coming soon.</p>
           </motion.div>
         )}
 
         {list.map((note, i) => {
-          const Icon = TYPE_ICON[note.type];
-
+          const Icon = typeIcon(note.type);
+          const tone = TONES[i % 4];
           return (
             <motion.div
               key={note.slug}
@@ -134,80 +86,26 @@ export default function ClassView({
               transition={{ delay: i * 0.05 }}
             >
               <Link
-                href={`/note/${cls}/${note.subject}/${encodeURIComponent(note.slug)}`}
-                className="
-                  glass group
-                  flex items-center gap-4
-                  rounded-2xl p-5
-                  transition-all duration-300
-                  hover:-translate-y-0.5
-                  hover:border-black/[0.14]
-                  hover:bg-black/[0.02]
-                  dark:hover:border-white/[0.18]
-                  dark:hover:bg-white/[0.055]
-                "
+                href={`/note/${cls}/${note.subject}/${note.slug}`}
+                className={`glass group flex items-center gap-4 rounded-2xl border-l-4 p-5 transition ${tone.edge} ${tone.hover}`}
               >
-                <span
-                  className="
-                    grid h-12 w-12 shrink-0
-                    place-items-center rounded-xl
-                    bg-indigo-500/10
-                    text-indigo-600
-                    dark:text-indigo-300
-                  "
-                >
+                <span className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl ${tone.chip}`}>
                   <Icon size={22} />
                 </span>
-
                 <div className="min-w-0 flex-1">
-                  <p
-                    className="
-                      truncate font-semibold
-                      text-zinc-900
-                      dark:text-white
-                    "
-                  >
-                    {note.title}
-                  </p>
-
-                  <p
-                    className="
-                      mt-0.5 text-xs
-                      text-zinc-500
-                      dark:text-white/50
-                    "
-                  >
-                    {TYPE_LABEL[note.type]} ·{" "}
-                    {formatDate(note.date)}
+                  <p className="truncate font-semibold">{note.title}</p>
+                  <p className="mt-0.5 text-xs text-mute">
+                    {TYPE_LABEL[note.type]} · {formatDate(note.date)}
                   </p>
                 </div>
-
                 {i === 0 && (
-                  <span
-                    className="
-                      rounded-full
-                      bg-amber-500/10
-                      px-3 py-1
-                      text-xs font-medium
-                      text-amber-700
-                      dark:bg-amber-400/15
-                      dark:text-amber-300
-                    "
-                  >
+                  <span className={`rounded-full px-3 py-1 text-xs font-medium ${tone.badge}`}>
                     Latest
                   </span>
                 )}
-
                 <ChevronRight
                   size={18}
-                  className="
-                    text-zinc-300
-                    transition
-                    group-hover:translate-x-1
-                    group-hover:text-zinc-700
-                    dark:text-white/25
-                    dark:group-hover:text-white/80
-                  "
+                  className={`text-mute transition group-hover:translate-x-1 ${tone.arrow}`}
                 />
               </Link>
             </motion.div>

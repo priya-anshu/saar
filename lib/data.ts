@@ -1,145 +1,70 @@
-    export const CLASSES = [
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    10,
-    11,
-    12,
-    ] as const;
+    export type NoteType = "tsx" | "html" | "image" | "3d" | "pdf";
 
-    export type NoteType =
-    | "html"
-    | "image"
-    | "3d"
-    | "pdf";
-
-    export type SubjectIconKey =
-    | "mathematics"
-    | "english"
-    | "evs"
-    | "hindi"
-    | "computer"
-    | "science"
-    | "social-science"
-    | "physics"
-    | "chemistry"
-    | "biology"
-    | "computer-science"
-    | "economics"
-    | "accountancy";
-
-    export type Subject = {
-    slug: string;
-    name: string;
-    icon: SubjectIconKey;
-    };
+    export type Subject = { slug: string; name: string; icon: string };
 
     export type Note = {
+    slug: string;
     class: number;
     subject: string;
-    slug: string;
     title: string;
     type: NoteType;
-    date: string;
     url: string;
+    date: string;
     };
 
-    export const SUBJECTS: Subject[] = [
-    {
-        slug: "mathematics",
-        name: "Mathematics",
-        icon: "mathematics",
-    },
-    {
-        slug: "english",
-        name: "English",
-        icon: "english",
-    },
-    {
-        slug: "evs",
-        name: "EVS",
-        icon: "evs",
-    },
-    {
-        slug: "hindi",
-        name: "Hindi",
-        icon: "hindi",
-    },
-    {
-        slug: "computer",
-        name: "Computer",
-        icon: "computer",
-    },
-    {
-        slug: "science",
-        name: "Science",
-        icon: "science",
-    },
-    {
-        slug: "social-science",
-        name: "Social Science",
-        icon: "social-science",
-    },
-    {
-        slug: "physics",
-        name: "Physics",
-        icon: "physics",
-    },
-    {
-        slug: "chemistry",
-        name: "Chemistry",
-        icon: "chemistry",
-    },
-    {
-        slug: "biology",
-        name: "Biology",
-        icon: "biology",
-    },
-    {
-        slug: "computer-science",
-        name: "Computer Science",
-        icon: "computer-science",
-    },
-    {
-        slug: "economics",
-        name: "Economics",
-        icon: "economics",
-    },
-    {
-        slug: "accountancy",
-        name: "Accountancy",
-        icon: "accountancy",
-    },
+    const s = (name: string, icon: string): Subject => ({
+    slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+    name,
+    icon,
+    });
+
+    export const CLASSES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
+    const ALL_SUBJECTS: Subject[] = [
+    s("Mathematics", "math"),
+    s("Science", "science"),
+    s("Physics", "physics"),
+    s("Chemistry", "chemistry"),
+    s("Biology", "biology"),
+    s("Social Science", "globe"),
+    s("English", "book"),
+    s("Hindi", "language"),
+    s("Computer", "computer"),
+    s("Computer Science", "code"),
+    s("Economics", "economics"),
+    s("Accountancy", "accounts"),
+    s("EVS", "leaf"),
     ];
 
-    export function subjectsFor(
-    _classNumber: number,
-    ): Subject[] {
-    return SUBJECTS;
+    // Every class gets every subject. A subject with no notes simply shows "0".
+    export function subjectsFor(cls: number): Subject[] {
+    void cls;
+    return ALL_SUBJECTS;
+    }
+
+    export function detectType(filename: string): NoteType | null {
+    const ext = filename.split(".").pop()?.toLowerCase() ?? "";
+    if (ext === "tsx") return "tsx";
+    if (["html", "htm"].includes(ext)) return "html";
+    if (["png", "jpg", "jpeg", "webp", "gif", "svg"].includes(ext)) return "image";
+    if (ext === "glb") return "3d";
+    if (ext === "pdf") return "pdf";
+    return null;
     }
 
     export const TYPE_LABEL: Record<NoteType, string> = {
+    tsx: "Interactive",
     html: "Interactive",
-    image: "Visual",
+    image: "Image",
     "3d": "3D Model",
     pdf: "PDF",
     };
 
-    export function formatDate(date: string) {
-    const parsed = new Date(`${date}T00:00:00Z`);
-
-    if (Number.isNaN(parsed.getTime())) {
-        return date;
-    }
-
-    return new Intl.DateTimeFormat("en-IN", {
+    export function formatDate(iso: string) {
+    return new Date(iso).toLocaleDateString("en-IN", {
         day: "numeric",
         month: "short",
         year: "numeric",
         timeZone: "UTC",
-    }).format(parsed);
+    });
     }

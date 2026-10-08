@@ -1,220 +1,64 @@
-    import fs from "node:fs";
-    import path from "node:path";
+    import fs from "fs";
+    import path from "path";
+    import { CLASSES, detectType, subjectsFor, type Note } from "./data";
 
-    import type { Note, NoteType } from "@/lib/data";
+    const SOURCES = [
+    { root: path.join(process.cwd(), "content", "notes"), isPublic: false },
+    { root: path.join(process.cwd(), "public", "notes"), isPublic: true },
+    ];
 
-    const NOTES_ROOT = path.join(
-    process.cwd(),
-    "public",
-    "notes",
-    );
+    const DATE_PREFIX = /^(\d{4}-\d{2}-\d{2})[_-]?(.*)$/;
 
-    const SUPPORTED_EXTENSIONS = new Set([
-    ".html",
-    ".htm",
-    ".pdf",
-    ".png",
-    ".jpg",
-    ".jpeg",
-    ".webp",
-    ".gif",
-    ".svg",
-    ".glb",
-    ".gltf",
-    ]);
-
-    function getNoteType(
-    extension: string,
-    ): NoteType | null {
-    switch (extension.toLowerCase()) {
-        case ".html":
-        case ".htm":
-        return "html";
-
-        case ".pdf":
-        return "pdf";
-
-        case ".png":
-        case ".jpg":
-        case ".jpeg":
-        case ".webp":
-        case ".gif":
-        case ".svg":
-        return "image";
-
-        case ".glb":
-        case ".gltf":
-        return "3d";
-
-        default:
-        return null;
-    }
-    }
-
-    function titleFromSlug(slug: string) {
-    return slug
-        .replace(/^\d{4}-\d{2}-\d{2}_/, "")
+    function titleCase(text: string) {
+    return text
         .replace(/[-_]+/g, " ")
-        .replace(/\s+/g, " ")
         .trim()
-        .replace(/\b\w/g, (char) => char.toUpperCase());
+        .replace(/\b\w/g, (c) => c.toUpperCase());
     }
 
-    function dateFromSlug(slug: string) {
-    const match = slug.match(
-        /^(\d{4}-\d{2}-\d{2})/,
-    );
+    export function getNotes(cls: number, subject: string): Note[] {
+    const notes: Note[] = [];
 
-    return match?.[1] ?? "1970-01-01";
+    for (const { root, isPublic } of SOURCES) {
+        const dir = path.join(root, String(cls), subject);
+        if (!fs.existsSync(dir)) continue;
+
+        for (const file of fs.readdirSync(dir)) {
+        const type = detectType(file);
+        if (!type) continue;
+        // TSX notes live in /content, every other type lives in /public
+        if ((type === "tsx") === isPublic) continue;
+
+        const base = file.replace(/\.[^.]+$/, "");
+        const match = base.match(DATE_PREFIX);
+        const date = match
+            ? new Date(match[1]).toISOString()
+            : fs.statSync(path.join(dir, file)).mtime.toISOString();
+
+        notes.push({
+            slug: base,
+            class: cls,
+            subject,
+            title: titleCase(match ? match[2] : base) || "Untitled",
+            type,
+            url: isPublic ? `/notes/${cls}/${subject}/${encodeURIComponent(file)}` : "",
+            date,
+        });
+        }
     }
 
-    function buildNote(
-    classNumber: number,
-    subject: string,
-    filename: string,
-    ): Note | null {
-    const extension = path.extname(filename);
-
-    if (
-        !SUPPORTED_EXTENSIONS.has(
-        extension.toLowerCase(),
-        )
-    ) {
-        return null;
+    return notes;
     }
 
-    const type = getNoteType(extension);
+    const newestFirst = (a: Note, b: Note) =>
+    a.date === b.date ? b.slug.localeCompare(a.slug) : b.date.localeCompare(a.date);
 
-    if (!type) {
-        return null;
-    }
-
-    const slug = path.basename(
-        filename,
-        extension,
-    );
-
-    return {
-        class: classNumber,
-        subject,
-        slug,
-        title: titleFromSlug(slug),
-        type,
-        date: dateFromSlug(slug),
-        url: `/notes/${classNumber}/${subject}/${filename}`,
-    };
+    export function getClassNotes(cls: number): Note[] {
+    return subjectsFor(cls)
+        .flatMap((s) => getNotes(cls, s.slug))
+        .sort(newestFirst);
     }
 
     export function getAllNotes(): Note[] {
-    if (!fs.existsSync(NOTES_ROOT)) {
-        return [];
-    }
-
-    const notes: Note[] = [];
-
-    const classDirectories = fs
-        .readdirSync(NOTES_ROOT, {
-        withFileTypes: true,
-        })
-        .filter((entry) => entry.isDirectory())
-        .filter((entry) => /^\d+$/.test(entry.name))
-        .sort(
-        (a, b) =>
-            Number(a.name) - Number(b.name),
-        );
-
-    for (const classDirectory of classDirectories) {
-        const classNumber = Number(
-        classDirectory.name,
-        );
-
-        const classPath = path.join(
-        NOTES_ROOT,
-        classDirectory.name,
-        );
-
-        const subjectDirectories = fs
-        .readdirSync(classPath, {
-            withFileTypes: true,
-        })
-        .filter((entry) => entry.isDirectory());
-
-        for (const subjectDirectory of subjectDirectories) {
-        const subject =
-            subjectDirectory.name;
-
-        const subjectPath = path.join(
-            classPath,
-            subject,
-        );
-
-        const files = fs
-            .readdirSync(subjectPath, {
-            withFileTypes: true,
-            })
-            .filter((entry) => entry.isFile());
-
-        for (const file of files) {
-            const note = buildNote(
-            classNumber,
-            subject,
-            file.name,
-            );
-
-            if (note) {
-            notes.push(note);
-            }
-        }
-        }
-    }
-
-    return notes.sort((a, b) => {
-        const dateComparison =
-        b.date.localeCompare(a.date);
-
-        if (dateComparison !== 0) {
-        return dateComparison;
-        }
-
-        return a.title.localeCompare(b.title);
-    });
-    }
-
-    export function getClassNotes(
-    classNumber: number,
-    ): Note[] {
-    return getAllNotes().filter(
-        (note) => note.class === classNumber,
-    );
-    }
-
-    export function getNoteHtml(
-    classNumber: number,
-    subject: string,
-    slug: string,
-    ): string | null {
-    const safeSlug = path.basename(slug);
-
-    const candidates = [
-        `${safeSlug}.html`,
-        `${safeSlug}.htm`,
-    ];
-
-    for (const filename of candidates) {
-        const filePath = path.join(
-        NOTES_ROOT,
-        String(classNumber),
-        subject,
-        filename,
-        );
-
-        if (fs.existsSync(filePath)) {
-        return fs.readFileSync(
-            filePath,
-            "utf8",
-        );
-        }
-    }
-
-    return null;
+    return CLASSES.flatMap((c) => getClassNotes(c));
     }

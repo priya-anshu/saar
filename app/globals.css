@@ -1,98 +1,97 @@
-  @import "tailwindcss";
+@import "tailwindcss";
 
-  @custom-variant dark (&:where(.dark, .dark *));
+@theme inline {
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-hand: var(--font-caveat), cursive;
 
-  @theme inline {
-    --font-sans: var(--font-inter), system-ui, sans-serif;
-    --font-display: var(--font-fraunces), Georgia, serif;
-  }
+  --color-page: var(--page);
+  --color-fg: var(--fg);
+  --color-mute: var(--mute);
+  --color-card: var(--card);
+  --color-line: var(--line);
+  --color-tint: var(--tint);
+  --color-accent: var(--accent);
+  --color-ok: var(--ok);
 
-  :root {
-    --bg: #f7f8fc;
-    --fg: #18181b;
-    --muted: #71717a;
+  --color-brand: var(--brand);
+  --color-brand2: var(--brand2);
+  --color-brand3: var(--brand3);
+  --color-brand4: var(--brand4);
+}
 
-    --surface: rgba(255, 255, 255, 0.72);
-    --surface-strong: rgba(255, 255, 255, 0.92);
-    --border: rgba(24, 24, 27, 0.08);
+/* ---------- SITE THEME (notes override brand colours themselves) ---------- */
+:root {
+  color-scheme: light dark;
 
-    --glow-1: rgba(99, 102, 241, 0.14);
-    --glow-2: rgba(245, 158, 11, 0.09);
-    --glow-3: rgba(236, 72, 153, 0.07);
-  }
+  --page: light-dark(#f5f6fb, #07070d);
+  --fg: light-dark(#14172b, #e8e8f0);
+  --mute: light-dark(#5a6283, #9a9db3);
+  --card: light-dark(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.04));
+  --line: light-dark(rgba(20, 23, 43, 0.12), rgba(255, 255, 255, 0.1));
+  --tint: light-dark(rgba(20, 23, 43, 0.05), rgba(255, 255, 255, 0.06));
+  --accent: light-dark(#c23b5a, #ff7a94);
+  --ok: light-dark(#1f7a55, #4ade80);
 
-  .dark {
-    --bg: #07070d;
-    --fg: #e8e8f0;
-    --muted: #a1a1aa;
+  --glow-a: light-dark(rgba(99, 102, 241, 0.16), rgba(99, 102, 241, 0.22));
+  --glow-b: light-dark(rgba(245, 158, 11, 0.12), rgba(245, 158, 11, 0.14));
+  --glow-c: light-dark(rgba(236, 72, 153, 0.08), rgba(236, 72, 153, 0.1));
 
-    --surface: rgba(255, 255, 255, 0.045);
-    --surface-strong: rgba(255, 255, 255, 0.07);
-    --border: rgba(255, 255, 255, 0.09);
+  /* default 4-colour palette (used by site pages, and by notes with no colours) */
+  --brand: light-dark(#4f46e5, #818cf8);
+  --brand2: light-dark(#db2777, #f472b6);
+  --brand3: light-dark(#0d9488, #2dd4bf);
+  --brand4: light-dark(#d97706, #fbbf24);
+}
 
-    --glow-1: rgba(99, 102, 241, 0.22);
-    --glow-2: rgba(245, 158, 11, 0.14);
-    --glow-3: rgba(236, 72, 153, 0.1);
-  }
+/* manual theme switch: sets color-scheme, which flips every light-dark() value */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
 
-  html {
-    background: var(--bg);
-    color-scheme: light;
-  }
+html,
+body {
+  background: var(--page);
+  color: var(--fg);
+}
 
-  html.dark {
-    color-scheme: dark;
-  }
+body {
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
 
-  body {
-    min-height: 100vh;
-    background: var(--bg);
-    color: var(--fg);
-    font-family: var(--font-inter), system-ui, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-    transition:
-      background-color 220ms ease,
-      color 220ms ease;
-  }
+/* each <Section> in a note takes the next colour in the 4-colour cycle */
+.note-body > section:nth-of-type(4n + 1) { --sec: var(--brand); }
+.note-body > section:nth-of-type(4n + 2) { --sec: var(--brand2); }
+.note-body > section:nth-of-type(4n + 3) { --sec: var(--brand3); }
+.note-body > section:nth-of-type(4n + 4) { --sec: var(--brand4); }
 
-  ::selection {
-    background: rgba(99, 102, 241, 0.24);
-  }
+@layer components {
+  .sec-text { color: var(--sec, var(--brand)); }
+  .sec-bg { background-color: var(--sec, var(--brand)); }
+  .sec-edge { border-color: var(--sec, var(--brand)); }
+  .sec-soft { background-color: color-mix(in srgb, var(--sec, var(--brand)) 10%, transparent); }
 
   .glow-bg {
-    position: relative;
-    isolation: isolate;
-    min-height: 100%;
     background:
-      radial-gradient(
-        60% 50% at 20% 0%,
-        var(--glow-1),
-        transparent 70%
-      ),
-      radial-gradient(
-        50% 40% at 90% 10%,
-        var(--glow-2),
-        transparent 70%
-      ),
-      radial-gradient(
-        60% 50% at 50% 100%,
-        var(--glow-3),
-        transparent 70%
-      );
+      radial-gradient(60% 50% at 20% 0%, var(--glow-a), transparent 70%),
+      radial-gradient(50% 40% at 90% 10%, var(--glow-b), transparent 70%),
+      radial-gradient(60% 50% at 50% 100%, var(--glow-c), transparent 70%);
   }
 
   .glass {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    background: var(--card);
+    border: 1px solid var(--line);
+    backdrop-filter: blur(12px);
   }
 
   .no-scrollbar {
     scrollbar-width: none;
   }
-
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+}
