@@ -4,7 +4,17 @@ import { ArrowLeft, ExternalLink } from "lucide-react";
 import { subjectsFor } from "@/lib/data";
 import { getAllNotes } from "@/lib/notes";
 import ThreeViewer from "@/components/ThreeViewer";
-
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ n: string; subject: string; slug: string }>;
+}) {
+  const { n, subject, slug } = await params;
+  const note = getAllNotes().find(
+    (x) => x.class === Number(n) && x.subject === subject && x.slug === decodeURIComponent(slug)
+  );
+  return { title: note?.title ?? "Note" };
+}
 export const dynamicParams = false;
 
 export function generateStaticParams() {

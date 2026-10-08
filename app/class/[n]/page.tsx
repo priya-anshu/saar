@@ -4,7 +4,10 @@ import { ArrowLeft } from "lucide-react";
 import { CLASSES, subjectsFor } from "@/lib/data";
 import { getClassNotes } from "@/lib/notes";
 import ClassView from "@/components/ClassView";
-
+export async function generateMetadata({ params }: { params: Promise<{ n: string }> }) {
+  const { n } = await params;
+  return { title: `Class ${n}` };
+}
 export const dynamicParams = false;
 
 export function generateStaticParams() {
