@@ -10,15 +10,18 @@ import {
   Globe,
   Image as ImageIcon,
   Languages,
+  Layers,
   Leaf,
+  ListChecks,
   Microscope,
   Monitor,
+  PenLine,
   Receipt,
   TrendingUp,
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import type { NoteType } from "./data";
+import type { NoteKind, NoteType } from "./data";
 
 export const SUBJECT_ICON: Record<string, LucideIcon> = {
   math: Calculator,
@@ -44,6 +47,14 @@ export const TYPE_ICON: Record<NoteType, LucideIcon> = {
   pdf: FileText,
 };
 
+export const KIND_ICON: Record<NoteKind, LucideIcon> = {
+  note: BookOpen,
+  quiz: ListChecks,
+  practice: PenLine,
+  cards: Layers,
+};
+
 // Safe lookups: never return undefined
 export const subjectIcon = (key: string): LucideIcon => SUBJECT_ICON[key] ?? BookOpen;
 export const typeIcon = (type: NoteType): LucideIcon => TYPE_ICON[type] ?? FileText;
+export const kindIcon = (kind: NoteKind): LucideIcon => KIND_ICON[kind] ?? BookOpen;

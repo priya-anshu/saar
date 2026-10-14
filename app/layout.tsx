@@ -1,8 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Fraunces, Caveat } from "next/font/google";
 import Link from "next/link";
+import { LayoutDashboard } from "lucide-react";
 import LogoMark from "@/components/LogoMark";
+import SearchDialog from "@/components/SearchDialog";
 import ThemeToggle from "@/components/ThemeToggle";
+import { getItems } from "@/lib/items";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -55,8 +58,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <LogoMark className="h-9 w-9" />
               <span className="font-display text-xl font-semibold tracking-tight">Saar</span>
             </Link>
-            <div className="flex items-center gap-4">
-              <span className="hidden text-sm text-mute sm:block">Learn the essence.</span>
+            <div className="flex items-center gap-3">
+              <span className="hidden text-sm text-mute lg:block">Learn the essence.</span>
+              <SearchDialog items={getItems()} />
+              <Link
+                href="/learning"
+                aria-label="My Learning"
+                className="flex h-9 items-center gap-2 rounded-full border border-line bg-tint px-3 text-sm text-mute transition hover:text-fg"
+              >
+                <LayoutDashboard size={16} />
+                <span className="hidden md:inline">My Learning</span>
+              </Link>
               <ThemeToggle />
             </div>
           </div>

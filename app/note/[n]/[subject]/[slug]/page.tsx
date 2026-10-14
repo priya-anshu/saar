@@ -1,20 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
-import { subjectsFor } from "@/lib/data";
-import { getAllNotes } from "@/lib/notes";
+import NoteActions from "@/components/NoteActions";
+import NoteNav from "@/components/NoteNav";
+import ReadingTools from "@/components/ReadingTools";
 import ThreeViewer from "@/components/ThreeViewer";
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ n: string; subject: string; slug: string }>;
-}) {
-  const { n, subject, slug } = await params;
-  const note = getAllNotes().find(
-    (x) => x.class === Number(n) && x.subject === subject && x.slug === decodeURIComponent(slug)
-  );
-  return { title: note?.title ?? "Note" };
-}
+import { KIND_LABEL, noteId, subjectsFor } from "@/lib/data";
+import { getAllNotes } from "@/lib/notes";
+
 export const dynamicParams = false;
 
 export function generateStaticParams() {
@@ -27,7 +20,7 @@ export function generateStaticParams() {
   }));
 }
 
-export default async function NotePage({
+export async function generateMetadata({
   params,
 }: {
   params: Promise<{ n: string; subject: string; slug: string }>;
@@ -36,9 +29,30 @@ export default async function NotePage({
   const note = getAllNotes().find(
     (x) => x.class === Number(n) && x.subject === subject && x.slug === decodeURIComponent(slug)
   );
+  return { title: note?.title ?? "Note" };
+}
+
+export default async function NotePage({
+  params,
+}: {
+  params: Promise<{ n: string; subject: string; slug: string }>;
+}) {
+  const { n, subject, slug } = await params;
+  const all = getAllNotes();
+  const note = all.find(
+    (x) => x.class === Number(n) && x.subject === subject && x.slug === decodeURIComponent(slug)
+  );
   if (!note) notFound();
 
   const sub = subjectsFor(note.class).find((s) => s.slug === note.subject);
+
+  // Same class, subject and type, newest first. Previous = older, Next = newer.
+  const siblings = all.filter(
+    (x) => x.class === note.class && x.subject === note.subject && x.kind === note.kind
+  );
+  const at = siblings.findIndex((x) => x.slug === note.slug);
+  const newer = at > 0 ? siblings[at - 1] : null;
+  const older = at >= 0 && at < siblings.length - 1 ? siblings[at + 1] : null;
 
   const Body =
     note.type === "tsx"
@@ -52,7 +66,7 @@ export default async function NotePage({
   return (
     <main className="min-h-[calc(100dvh-4rem)]">
       <div className="sticky top-16 z-20 border-b border-line bg-page/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-5xl items-center gap-4 px-5 py-2.5">
+        <div className="mx-auto flex max-w-5xl items-center gap-3 px-5 py-2.5">
           <Link
             href={`/class/${note.class}`}
             className="flex shrink-0 items-center gap-1.5 rounded-full border border-line bg-tint px-4 py-1.5 text-sm text-mute transition hover:text-fg"
@@ -61,10 +75,17 @@ export default async function NotePage({
           </Link>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold">{note.title}</p>
-            <p className="text-xs text-mute">
+            <p className="truncate text-xs text-mute">
               Class {note.class} · {sub?.name ?? note.subject}
+              {note.kind !== "note" && ` · ${KIND_LABEL[note.kind]}`}
             </p>
           </div>
+
+          <div className="flex shrink-0 items-center gap-2">
+            {note.type === "tsx" && <ReadingTools />}
+            <NoteActions id={noteId(note)} />
+          </div>
+
           {(note.type === "html" || note.type === "pdf") && (
             <a
               href={note.url}
@@ -80,7 +101,12 @@ export default async function NotePage({
       </div>
 
       {Body ? (
-        <Body />
+        <>
+          <article id="note-content">
+            <Body />
+          </article>
+          <NoteNav prev={older} next={newer} label={KIND_LABEL[note.kind].toLowerCase()} />
+        </>
       ) : (
         <div className="h-[calc(100dvh-7.5rem)] w-full">
           {note.type === "html" && (

@@ -1,4 +1,5 @@
     export type NoteType = "tsx" | "html" | "image" | "3d" | "pdf";
+    export type NoteKind = "note" | "quiz" | "practice" | "cards";
 
     export type Subject = { slug: string; name: string; icon: string };
 
@@ -7,6 +8,7 @@
     class: number;
     subject: string;
     title: string;
+    kind: NoteKind;
     type: NoteType;
     url: string;
     date: string;
@@ -36,11 +38,25 @@
     s("EVS", "leaf"),
     ];
 
-    // Every class gets every subject. A subject with no notes simply shows "0".
+    // Every class gets every subject. A subject with no content simply shows 0.
     export function subjectsFor(cls: number): Subject[] {
     void cls;
     return ALL_SUBJECTS;
     }
+
+    export const KINDS: { key: NoteKind; label: string; empty: string }[] = [
+    { key: "note", label: "Notes", empty: "No notes yet. Fresh content is coming soon." },
+    { key: "quiz", label: "Quizzes", empty: "No quizzes yet. Check back soon." },
+    { key: "practice", label: "Practice", empty: "No practice questions yet. Check back soon." },
+    { key: "cards", label: "Flashcards", empty: "No flashcards yet. Check back soon." },
+    ];
+
+    export const KIND_LABEL: Record<NoteKind, string> = {
+    note: "Note",
+    quiz: "Quiz",
+    practice: "Practice questions",
+    cards: "Flashcards",
+    };
 
     export function detectType(filename: string): NoteType | null {
     const ext = filename.split(".").pop()?.toLowerCase() ?? "";
@@ -68,3 +84,7 @@
         timeZone: "UTC",
     });
     }
+
+    // Unique id used for progress, bookmarks and search
+    export const noteId = (n: Pick<Note, "class" | "subject" | "slug">) =>
+    `${n.class}/${n.subject}/${n.slug}`;
