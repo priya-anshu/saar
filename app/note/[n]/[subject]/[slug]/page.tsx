@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import NoteActions from "@/components/NoteActions";
 import NoteNav from "@/components/NoteNav";
+import PrintButton from "@/components/PrintButton";
 import ReadingTools from "@/components/ReadingTools";
 import ThreeViewer from "@/components/ThreeViewer";
 import { KIND_LABEL, noteId, subjectsFor } from "@/lib/data";
@@ -65,7 +66,7 @@ export default async function NotePage({
 
   return (
     <main className="min-h-[calc(100dvh-4rem)]">
-      <div className="sticky top-16 z-20 border-b border-line bg-page/80 backdrop-blur-xl">
+      <div className="sticky top-16 z-20 border-b border-line bg-page/80 backdrop-blur-xl print:hidden">
         <div className="mx-auto flex max-w-5xl items-center gap-3 px-5 py-2.5">
           <Link
             href={`/class/${note.class}`}
@@ -83,6 +84,7 @@ export default async function NotePage({
 
           <div className="flex shrink-0 items-center gap-2">
             {note.type === "tsx" && <ReadingTools />}
+            {note.type === "tsx" && <PrintButton />}
             <NoteActions id={noteId(note)} />
           </div>
 
@@ -102,10 +104,18 @@ export default async function NotePage({
 
       {Body ? (
         <>
+          {/* only visible on paper */}
+          <p className="hidden px-5 pt-4 text-sm text-mute print:block">
+            Saar · Class {note.class} · {sub?.name ?? note.subject} · {KIND_LABEL[note.kind]}
+          </p>
+
           <article id="note-content">
             <Body />
           </article>
-          <NoteNav prev={older} next={newer} label={KIND_LABEL[note.kind].toLowerCase()} />
+
+          <div className="print:hidden">
+            <NoteNav prev={older} next={newer} label={KIND_LABEL[note.kind].toLowerCase()} />
+          </div>
         </>
       ) : (
         <div className="h-[calc(100dvh-7.5rem)] w-full">

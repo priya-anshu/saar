@@ -95,3 +95,41 @@ body {
     display: none;
   }
 }
+
+/* ---------- PRINT: always light, no menus, keeps the colours ---------- */
+@media print {
+  :root,
+  :root[data-theme="light"],
+  :root[data-theme="dark"] {
+    color-scheme: light;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .glow-bg {
+    background: none;
+  }
+
+  .glass {
+    backdrop-filter: none;
+  }
+
+  h2 {
+    break-after: avoid;
+  }
+
+  .glass,
+  article,
+  table,
+  pre {
+    break-inside: avoid;
+  }
+}

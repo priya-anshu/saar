@@ -1,0 +1,49 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Offline · Saar</title>
+    <style>
+        :root { color-scheme: light dark; }
+        * { box-sizing: border-box; }
+        body {
+        margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px;
+        font-family: system-ui, -apple-system, "Segoe UI", sans-serif; text-align: center;
+        background: #f5f6fb; color: #14172b;
+        }
+        .box { max-width: 420px; }
+        .logo {
+        width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 20px; display: grid; place-items: center;
+        background: linear-gradient(135deg, #4f46e5, #db2777 55%, #f59e0b);
+        color: #fff; font-size: 34px; font-weight: 700; font-family: Georgia, serif;
+        }
+        h1 { margin: 0 0 8px; font-size: 26px; }
+        p { margin: 0 0 24px; line-height: 1.6; color: #5a6283; }
+        .row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        a, button {
+        font: inherit; font-weight: 600; font-size: 14px; padding: 10px 20px; border-radius: 10px;
+        border: 1px solid #4f46e5; cursor: pointer; text-decoration: none;
+        }
+        button { background: #4f46e5; color: #fff; }
+        a { background: transparent; color: #4f46e5; }
+        @media (prefers-color-scheme: dark) {
+        body { background: #07070d; color: #e8e8f0; }
+        p { color: #9a9db3; }
+        button { background: #818cf8; border-color: #818cf8; color: #07070d; }
+        a { color: #818cf8; border-color: #818cf8; }
+        }
+    </style>
+    </head>
+    <body>
+    <div class="box">
+        <div class="logo">S</div>
+        <h1>You’re offline</h1>
+        <p>This page hasn’t been saved on your device yet. Reconnect to open it, or go back to a note you have read before. Those still work offline.</p>
+        <div class="row">
+        <button onclick="location.reload()">Try again</button>
+        <a href="/">Go home</a>
+        </div>
+    </div>
+    </body>
+    </html>
