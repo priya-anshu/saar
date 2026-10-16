@@ -12,6 +12,7 @@
     type: NoteType;
     url: string;
     date: string;
+    order?: number; // lesson number from the filename, used for teaching order
     };
 
     const s = (name: string, icon: string): Subject => ({

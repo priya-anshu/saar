@@ -191,7 +191,7 @@ export default function ClassView({
                     {deckKnown}/{deck.total} known
                   </span>
                 )}
-                {i === 0 && (
+                {i === 0 && note.order === undefined && (
                   <span className={`rounded-full px-3 py-1 text-xs font-medium ${tone.badge}`}>
                     Latest
                   </span>
